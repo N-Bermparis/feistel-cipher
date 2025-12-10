@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 
 #define BLOCK_SIZE 8
 #define HALF_SIZE (BLOCK_SIZE / 2)
-#define ROUNDS 4     // ✅ Number of Feistel rounds
+#define ROUNDS 4
 
 
 
@@ -13,9 +14,9 @@
 
 void split(char msg[], char L[], char R[]);
 int xor_op(int a, int b);
-int rand_keygen();
 unsigned char F(unsigned char r, unsigned char k);
 void feistel_round(char L[], char R[], unsigned char key);
+unsigned char rand_keygen();
 
 
 
@@ -25,7 +26,10 @@ void feistel_round(char L[], char R[], unsigned char key);
 
 int main()
 {
-    char msg[BLOCK_SIZE + 1];
+    //FIX: Seed RNG ONCE (critical for security)
+    srand(time(NULL));
+
+    char msg[BLOCK_SIZE + 1];  
     char L[HALF_SIZE];
     char R[HALF_SIZE];
 
@@ -62,13 +66,16 @@ int main()
         printf("\n");
     }
 
-    // --- FINAL CIPHERTEXT BLOCK ---
-    printf("\nFinal Cipher Block:\n");
+    // --- FINAL CIPHERTEXT BLOCK (HEX SAFE OUTPUT) ---
+    printf("\nFinal Cipher Block (HEX):\n");
+
     printf("Left:  ");
-    for (int i = 0; i < HALF_SIZE; i++) printf("%02X ", (unsigned char)L[i]);
+    for (int i = 0; i < HALF_SIZE; i++)
+        printf("%02X ", (unsigned char)L[i]);
 
     printf("\nRight: ");
-    for (int i = 0; i < HALF_SIZE; i++) printf("%02X ", (unsigned char)R[i]);
+    for (int i = 0; i < HALF_SIZE; i++)
+        printf("%02X ", (unsigned char)R[i]);
 
     printf("\n");
 
@@ -103,23 +110,12 @@ int xor_op(int a, int b)
 
 
 // ============================
-//   RANDOM KEY GENERATOR
-// ============================
-
-int rand_keygen()
-{
-    return rand() % 256;
-}
-
-
-
-// ============================
 //   FEISTEL ROUND FUNCTION F
 // ============================
 
 unsigned char F(unsigned char r, unsigned char k)
 {
-    return r ^ k;
+    return r ^ k;   // toy round function
 }
 
 
@@ -133,13 +129,24 @@ void feistel_round(char L[], char R[], unsigned char key)
     char newR[HALF_SIZE];
 
     for (int i = 0; i < HALF_SIZE; i++) {
-        unsigned char f = F(R[i], key);
-        newR[i] = xor_op(L[i], f);
+        unsigned char f = F((unsigned char)R[i], key);
+        newR[i] = (char)xor_op((unsigned char)L[i], f);
     }
 
-    // Swap
+    // Swap halves
     for (int i = 0; i < HALF_SIZE; i++) {
         L[i] = R[i];
         R[i] = newR[i];
     }
+}
+
+
+
+// ============================
+//   RANDOM KEY GENERATOR
+// ============================
+
+unsigned char rand_keygen()
+{
+    return (unsigned char)(rand() % 256);
 }
