@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Feistel Cipher – Mathematical Explanation</title>
+</head>
+<body>
+
+<h1>Feistel Cipher</h1>
+
+<p>
+The Feistel cipher is a symmetric block cipher structure widely used in classical cryptography. 
+Its most important property is that <b>encryption and decryption use the same structure</b>, 
+making it efficient and elegant from a mathematical perspective.
+</p>
+
+<h2>1. Feistel Round Structure (Diagram)</h2>
+
+<p>The diagram below illustrates one round of a Feistel network:</p>
+
+<p>
+<img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Feistel_cipher_diagram_en.svg" 
+     alt="Feistel Cipher Round Diagram">
+</p>
+
+<p>
+The input block is divided into two halves, <i>L<sub>i</sub></i> and <i>R<sub>i</sub></i>.  
+A round function <i>F</i> (parameterized by round key <i>K<sub>i</sub></i>) operates on one half, and the 
+result is XORed with the other half. The halves are then swapped.
+</p>
+
+<h2>2. Mathematical Formulation of a Feistel Round</h2>
+
+<p>
+Given round <i>i</i> with subkey <i>K<sub>i</sub></i>, the transformation is:
+</p>
+
+<pre>
+L<sub>i+1</sub> = R<sub>i</sub>
+R<sub>i+1</sub> = L<sub>i</sub> ⊕ F(R<sub>i</sub>, K<sub>i</sub>)
+</pre>
+
+<p>
+This simple pair of operations defines the entire Feistel network.  
+The function <i>F</i> itself does <b>not</b> need to be invertible, thanks to the XOR operation.
+</p>
+
+<h2>3. The Round Function F</h2>
+
+<p><i>F</i> may include:</p>
+<ul>
+    <li>modular addition</li>
+    <li>XOR operations</li>
+    <li>S-box substitutions</li>
+    <li>bit permutations</li>
+</ul>
+
+<p>
+The security of a Feistel cipher depends heavily on the complexity of <i>F</i> and the number of rounds used.
+</p>
+
+<h2>4. Multiple Rounds</h2>
+
+<p>
+After <i>N</i> rounds, the ciphertext becomes:
+</p>
+
+<pre>
+Ciphertext = (L<sub>N</sub>, R<sub>N</sub>)
+</pre>
+
+<p>
+Feistel networks typically use many rounds (e.g., DES uses 16 rounds) to achieve strong diffusion.
+</p>
+
+<h2>5. Decryption</h2>
+
+<p>
+Decryption uses the same equations as encryption, but with keys applied in reverse order:
+</p>
+
+<pre>
+Encryption keys:   K1, K2, ..., KN
+Decryption keys:   KN, ..., K2, K1
+</pre>
+
+<p>
+This works because XOR is its own inverse:
+</p>
+
+<pre>
+A ⊕ B ⊕ B = A
+</pre>
+
+<p>
+Thus the Feistel structure is inherently invertible without requiring <i>F</i> to be invertible.
+</p>
+
+<h2>6. Summary</h2>
+
+<ul>
+    <li>A Feistel cipher splits the block into left and right halves.</li>
+    <li>Each round uses:  
+        L<sub>i+1</sub> = R<sub>i</sub>,  
+        R<sub>i+1</sub> = L<sub>i</sub> ⊕ F(R<sub>i</sub>, K<sub>i</sub>)
+    </li>
+    <li>Any function can serve as <i>F</i>; it need not be invertible.</li>
+    <li>Decryption uses the same structure with reversed key order.</li>
+    <li>This structure underlies block ciphers such as DES, Blowfish, and others.</li>
+</ul>
+
+</body>
+</html>
