@@ -3,6 +3,9 @@
 
 #define BLOCK_SIZE 8
 #define HALF_SIZE (BLOCK_SIZE / 2)
+#define ROUNDS 4     // ✅ Number of Feistel rounds
+
+
 
 // ============================
 //   FUNCTION PROTOTYPES
@@ -12,6 +15,7 @@ void split(char msg[], char L[], char R[]);
 int xor_op(int a, int b);
 int rand_keygen();
 unsigned char F(unsigned char r, unsigned char k);
+void feistel_round(char L[], char R[], unsigned char key);
 
 
 
@@ -21,44 +25,52 @@ unsigned char F(unsigned char r, unsigned char k);
 
 int main()
 {
-    char msg[BLOCK_SIZE + 1];  // +1 for null terminator
+    char msg[BLOCK_SIZE + 1];
     char L[HALF_SIZE];
     char R[HALF_SIZE];
 
     printf("Enter an 8-character message:\n");
     fgets(msg, BLOCK_SIZE + 1, stdin);
 
-    // --- SPLIT TEST ---
+    // --- SPLIT INITIAL BLOCK ---
     split(msg, L, R);
 
-    printf("\nLeft half:  ");
-    for (int i = 0; i < HALF_SIZE; i++) {
-        printf("%c", L[i]);
-    }
+    printf("\nInitial Left:  ");
+    for (int i = 0; i < HALF_SIZE; i++) printf("%c", L[i]);
 
-    printf("\nRight half: ");
-    for (int i = 0; i < HALF_SIZE; i++) {
-        printf("%c", R[i]);
-    }
+    printf("\nInitial Right: ");
+    for (int i = 0; i < HALF_SIZE; i++) printf("%c", R[i]);
     printf("\n");
 
-    // --- XOR TEST ---
-    int x = 1;
-    int y = 0;
-    printf("\nXOR test: %d ^ %d = %d\n", x, y, xor_op(x, y));
+    // --- MULTI-ROUND FEISTEL ---
+    printf("\n--- FEISTEL ROUNDS ---\n");
 
-    // --- RANDOM KEY TEST ---
-    unsigned char key = rand_keygen();
-    printf("Random key generated: %d\n", key);
+    for (int round = 0; round < ROUNDS; round++) {
 
-    // --- FEISTEL ROUND FUNCTION F TEST ---
-    unsigned char test_r = R[0];     // first byte of right half
-    unsigned char f_out = F(test_r, key);
+        unsigned char key = rand_keygen();   // round key
+        printf("\nRound %d Key: %d\n", round + 1, key);
 
-    printf("\nF Test:");
-    printf("\nR[0] = %d", test_r);
-    printf("\nKey  = %d", key);
-    printf("\nF(R, K) = %d\n", f_out);
+        feistel_round(L, R, key);
+
+        printf("After Round %d:\n", round + 1);
+
+        printf("Left:  ");
+        for (int i = 0; i < HALF_SIZE; i++) printf("%c", L[i]);
+
+        printf("\nRight: ");
+        for (int i = 0; i < HALF_SIZE; i++) printf("%c", R[i]);
+        printf("\n");
+    }
+
+    // --- FINAL CIPHERTEXT BLOCK ---
+    printf("\nFinal Cipher Block:\n");
+    printf("Left:  ");
+    for (int i = 0; i < HALF_SIZE; i++) printf("%02X ", (unsigned char)L[i]);
+
+    printf("\nRight: ");
+    for (int i = 0; i < HALF_SIZE; i++) printf("%02X ", (unsigned char)R[i]);
+
+    printf("\n");
 
     return 0;
 }
@@ -96,8 +108,7 @@ int xor_op(int a, int b)
 
 int rand_keygen()
 {
-    srand(time(NULL));
-    return rand() % 256;     // return 1-byte key
+    return rand() % 256;
 }
 
 
@@ -108,5 +119,27 @@ int rand_keygen()
 
 unsigned char F(unsigned char r, unsigned char k)
 {
-    return r ^ k;   // simple Feistel round function (toy version)
+    return r ^ k;
+}
+
+
+
+// ============================
+//   ONE FEISTEL ROUND
+// ============================
+
+void feistel_round(char L[], char R[], unsigned char key)
+{
+    char newR[HALF_SIZE];
+
+    for (int i = 0; i < HALF_SIZE; i++) {
+        unsigned char f = F(R[i], key);
+        newR[i] = xor_op(L[i], f);
+    }
+
+    // Swap
+    for (int i = 0; i < HALF_SIZE; i++) {
+        L[i] = R[i];
+        R[i] = newR[i];
+    }
 }
