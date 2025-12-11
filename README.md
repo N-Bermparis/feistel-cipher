@@ -26,10 +26,10 @@ A Feistel cipher divides the input block into two halves:
 M = (L0, R0)
 
 For each round \(i\), with subkey \(K_i\), the transformation is:
-
+```text
 L_{i+1} = R_i
 R_{i+1} = L_i XOR F(R_i, K_i)
-
+```
 This process:
 
 - Does **not** require the round function \(F\) to be invertible  
